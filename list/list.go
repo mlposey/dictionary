@@ -1,21 +1,28 @@
 package list
 
-// Object defines an interface for List values.
-//
-// All inserted values should implement the operations defined here.
-type Object interface {
-	// Return true if other is less than this.
-	Less(other Object) bool
-}
-
 // ListNode is a node for a List.
-type ListNode struct {
-	object      *Object
-	left, right *ListNode
+type listNode struct {
+	object     interface{}
+	prev, next *listNode
 }
 
 // List is a double-linked list.
-// TODO: Improve List documentation.
+//
+// It supports all types and does not change the order of what is inserted.
 type List struct {
-	head, tail *ListNode
+	head, tail *listNode
+}
+
+// Insert adds an object to the beginning of the List.
+func (l *List) Insert(object interface{}) {
+	node := &listNode{object: object}
+	if l.head == nil {
+		l.head = node
+		l.tail = node
+		node.next = l.head
+	} else {
+		l.head.prev = node
+		node.next = l.head
+		l.head = node
+	}
 }
