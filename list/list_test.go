@@ -56,9 +56,6 @@ func TestList_RemoveFront(t *testing.T) {
 	l.Insert(3)
 	testReturn(3)
 
-	l.InsertEnd(3)
-	testReturn(3)
-
 	l.Insert(3)
 	l.Insert(5)
 	testReturn(5)
