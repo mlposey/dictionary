@@ -76,7 +76,7 @@ func (l *List) RemoveEnd() interface{} {
 func (l *List) Remove(key interface{}) interface{} {
 	n := l.head
 	for n != nil {
-		if l.keyCompare(key, n.object) == 0 {
+		if l.KeyCompare(key, n.object) == 0 {
 			if n.prev != nil {
 				n.prev.next = n.next
 			}

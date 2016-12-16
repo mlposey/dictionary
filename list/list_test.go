@@ -84,7 +84,7 @@ func TestList_RemoveEnd(t *testing.T) {
 
 // Test *List.Remove
 func TestList_Remove(t *testing.T) {
-	l := &List{keyCompare: func(key interface{}, obj interface{}) int8 {
+	l := &List{KeyCompare: func(key interface{}, obj interface{}) int8 {
 		if key.(int) < obj.(int) {
 			return -1
 		} else if key.(int) > obj.(int) {
