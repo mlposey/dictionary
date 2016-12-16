@@ -2,8 +2,7 @@ package list
 
 import "testing"
 
-// TODO: Specify that we're testing *List, not List.
-// Test List.Insert
+// Test *List.Insert
 func TestList_Insert(t *testing.T) {
 	l := &List{}
 

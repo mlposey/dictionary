@@ -19,7 +19,6 @@ func (l *List) Insert(object interface{}) {
 	if l.head == nil {
 		l.head = node
 		l.tail = node
-		node.next = l.head // TODO: Remove this.
 	} else {
 		l.head.prev = node
 		node.next = l.head
