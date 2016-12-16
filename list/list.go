@@ -9,8 +9,15 @@ type listNode struct {
 // List is a double-linked list.
 //
 // It supports all types and does not change the order of what is inserted.
+//
+// KeyCompare -
+//	This function should compare a key to an object which contains
+//	a key of that type. The return values should be:
+//		-1 if key is less than object key
+//		0 if key is equal to object key
+//		1 if key is greater than object key
 type List struct {
-	keyCompare func(interface{}, interface{}) int8
+	KeyCompare func(interface{}, interface{}) int8
 	head, tail *listNode
 }
 
