@@ -82,3 +82,44 @@ func TestList_RemoveEnd(t *testing.T) {
 	l.InsertEnd(5)
 	testReturn(5)
 }
+
+// Test *List.Remove
+func TestList_Remove(t *testing.T) {
+	l := &List{keyCompare: func(key interface{}, obj interface{}) int8 {
+		if key.(int) < obj.(int) {
+			return -1
+		} else if key.(int) > obj.(int) {
+			return 1
+		} else {
+			return 0
+		}
+	}}
+
+	expect := func(expect int, actual interface{}) {
+		if expect != actual.(int) {
+			t.Error("Expected", expect, "got", actual)
+		}
+	}
+
+	l.Insert(3)
+	l.Insert(5)
+	l.Insert(1)
+	// 1 -- 5 -- 3
+
+	expect(1, l.Remove(1)) // 5 -- 3
+	expect(5, l.head.object)
+
+	l.Insert(1)            // 1 -- 5 -- 3
+	expect(5, l.Remove(5)) // 1 -- 3
+	expect(3, l.head.next.object)
+
+	l.Insert(5)            // 5 -- 1 -- 3
+	expect(3, l.Remove(3)) // 5 -- 1
+	if l.tail.next != nil {
+		t.Error()
+	}
+
+	if l.Remove(9) != nil {
+		t.Error("Removing nonexistant val does not return nil")
+	}
+}

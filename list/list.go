@@ -10,6 +10,7 @@ type listNode struct {
 //
 // It supports all types and does not change the order of what is inserted.
 type List struct {
+	keyCompare func(interface{}, interface{}) int8
 	head, tail *listNode
 }
 
@@ -62,4 +63,28 @@ func (l *List) RemoveEnd() interface{} {
 	node := l.tail
 	l.tail = l.tail.prev
 	return node.object
+}
+
+// Remove removes and returns an object from the List.
+func (l *List) Remove(key interface{}) interface{} {
+	n := l.head
+	for n != nil {
+		if l.keyCompare(key, n.object) == 0 {
+			if n.prev != nil {
+				n.prev.next = n.next
+			}
+			if n.next != nil {
+				n.next.prev = n.prev
+			}
+			if n == l.head {
+				l.head = l.head.next
+			}
+			if n == l.tail {
+				l.tail = l.tail.prev
+			}
+			return n.object
+		}
+		n = n.next
+	}
+	return nil
 }
