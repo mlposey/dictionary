@@ -20,8 +20,7 @@ func TestList_Insert(t *testing.T) {
 	}
 }
 
-// TODO: This should be *List.InsertEnd.
-// Test List.InsertEnd
+// Test *List.InsertEnd
 func TestList_InsertEnd(t *testing.T) {
 	l := &List{}
 
