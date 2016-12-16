@@ -65,7 +65,7 @@ func TestList_RemoveFront(t *testing.T) {
 func TestList_RemoveEnd(t *testing.T) {
 	l := &List{}
 
-	if l.RemoveFront() != nil {
+	if l.RemoveEnd() != nil {
 		t.Error("Non-nil return value on empty List")
 	}
 
