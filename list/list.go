@@ -18,6 +18,7 @@ type listNode struct {
 //		1 if key is greater than object key
 type List struct {
 	KeyCompare func(interface{}, interface{}) int8
+	Size       uint
 	head, tail *listNode
 }
 
@@ -32,6 +33,7 @@ func (l *List) Insert(object interface{}) {
 		node.next = l.head
 		l.head = node
 	}
+	l.Size++
 }
 
 // InsertEnd adds an object to the end of the List.
@@ -46,6 +48,7 @@ func (l *List) InsertEnd(object interface{}) {
 		node.prev = l.tail
 		l.tail = node
 	}
+	l.Size++
 }
 
 // RemoveFront removes and returns the front item.
@@ -57,6 +60,7 @@ func (l *List) RemoveFront() interface{} {
 	}
 	node := l.head
 	l.head = l.head.next
+	l.Size--
 	return node.object
 }
 
@@ -69,6 +73,7 @@ func (l *List) RemoveEnd() interface{} {
 	}
 	node := l.tail
 	l.tail = l.tail.prev
+	l.Size--
 	return node.object
 }
 
@@ -89,6 +94,7 @@ func (l *List) Remove(key interface{}) interface{} {
 			if n == l.tail {
 				l.tail = l.tail.prev
 			}
+			l.Size--
 			return n.object
 		}
 		n = n.next
