@@ -32,6 +32,7 @@ func (l *List) InsertEnd(object interface{}) {
 	if l.head == nil {
 		l.head = node
 		l.tail = node
+		l.tail.prev = l.head
 	} else {
 		l.tail.next = node
 		node.prev = l.tail
@@ -48,5 +49,17 @@ func (l *List) RemoveFront() interface{} {
 	}
 	node := l.head
 	l.head = l.head.next
+	return node.object
+}
+
+// RemoveEnd removes the last item.
+//
+// Returns nil if the *List is empty.
+func (l *List) RemoveEnd() interface{} {
+	if l.head == nil {
+		return nil
+	}
+	node := l.tail
+	l.tail = l.tail.prev
 	return node.object
 }

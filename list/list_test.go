@@ -63,3 +63,25 @@ func TestList_RemoveFront(t *testing.T) {
 	l.Insert(5)
 	testReturn(5)
 }
+
+// Test *List.RemoveEnd
+func TestList_RemoveEnd(t *testing.T) {
+	l := &List{}
+
+	if l.RemoveFront() != nil {
+		t.Error("Non-nil return value on empty List")
+	}
+
+	testReturn := func(expect int) {
+		if l.RemoveEnd() != expect {
+			t.Error("Wrong return value from *List.RemoveEnd")
+		}
+	}
+
+	l.InsertEnd(3)
+	testReturn(3)
+
+	l.InsertEnd(3)
+	l.InsertEnd(5)
+	testReturn(5)
+}
