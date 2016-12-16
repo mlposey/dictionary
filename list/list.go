@@ -19,10 +19,23 @@ func (l *List) Insert(object interface{}) {
 	if l.head == nil {
 		l.head = node
 		l.tail = node
-		node.next = l.head
+		node.next = l.head // TODO: Remove this.
 	} else {
 		l.head.prev = node
 		node.next = l.head
 		l.head = node
+	}
+}
+
+// InsertEnd adds an object to the end of the List.
+func (l *List) InsertEnd(object interface{}) {
+	node := &listNode{object: object}
+	if l.head == nil {
+		l.head = node
+		l.tail = node
+	} else {
+		l.tail.next = node
+		node.prev = l.tail
+		l.tail = node
 	}
 }
