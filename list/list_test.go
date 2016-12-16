@@ -20,6 +20,7 @@ func TestList_Insert(t *testing.T) {
 	}
 }
 
+// TODO: This should be *List.InsertEnd.
 // Test List.InsertEnd
 func TestList_InsertEnd(t *testing.T) {
 	l := &List{}
@@ -36,4 +37,29 @@ func TestList_InsertEnd(t *testing.T) {
 	if l.tail.prev != l.head {
 		t.Error("Tail pointer not changed on List InsertEnd")
 	}
+}
+
+// Test *List.RemoveFront
+func TestList_RemoveFront(t *testing.T) {
+	l := &List{}
+
+	if l.RemoveFront() != nil {
+		t.Error("Non-nil return value on empty List")
+	}
+
+	testReturn := func(expect int) {
+		if l.RemoveFront() != expect {
+			t.Error("Wrong return value from *List.RemoveFront")
+		}
+	}
+
+	l.Insert(3)
+	testReturn(3)
+
+	l.InsertEnd(3)
+	testReturn(3)
+
+	l.Insert(3)
+	l.Insert(5)
+	testReturn(5)
 }

@@ -38,3 +38,15 @@ func (l *List) InsertEnd(object interface{}) {
 		l.tail = node
 	}
 }
+
+// RemoveFront removes and returns the front item.
+//
+// Returns nil if the *List is empty.
+func (l *List) RemoveFront() interface{} {
+	if l.head == nil {
+		return nil
+	}
+	node := l.head
+	l.head = l.head.next
+	return node.object
+}
