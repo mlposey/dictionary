@@ -2,7 +2,7 @@ package heap
 
 // Heap implements a binary heap.
 //
-// Comparator -
+// Greater -
 //	This required function compares two heap objects. The return value
 //	should be:
 //		-1 if arg1 < arg2
@@ -10,7 +10,7 @@ package heap
 //		1  if arg1 > arg2
 type Heap struct {
 	// Compare two heap objects
-	Comparator func(interface{}, interface{}) int8
+	Greater func(interface{}, interface{}) int8
 
 	// The max number of items Heap can hold before resizing
 	Capacity uint
@@ -23,20 +23,47 @@ type Heap struct {
 
 // NewHeap creates a new *Heap.
 //
-// size - the initial capacity of the Heap
+// minHeap - true if Heap should be a min-heap; false otherwise
+//
+// capacity - the initial capacity of the Heap
 //	  If not supplied, a default capacity is chosen.
 //
 // see Heap doc for valid comparator definitions.
-func NewHeap(comparator func(interface{}, interface{}) int8, capacity ...uint) *Heap {
+func NewHeap(greater func(interface{}, interface{}) int8, minHeap bool, capacity ...uint) *Heap {
 	var cap uint
 	if len(capacity) == 0 {
 		cap = 20
 	} else {
 		cap = capacity[0]
 	}
+	comp := greater
+	if minHeap {
+		comp = func(a, b interface{}) int8 {
+			return -greater(a, b)
+		}
+	}
 	return &Heap{
-		Comparator: comparator,
-		Capacity:   cap,
-		items:      make([]interface{}, cap),
+		Greater:  comp,
+		Capacity: cap,
+		items:    make([]interface{}, cap),
+	}
+}
+
+// Insert adds an object to the Heap.
+func (h *Heap) Insert(object interface{}) {
+	h.items[h.Size] = object
+	parent := (h.Size - 1) / 2
+	for i := h.Size; i != 0 && h.Greater(h.items[i], h.items[parent]) == 1; i = parent {
+		parent = (i - 1) / 2
+		h.items[parent], h.items[i] = h.items[i], h.items[parent]
+	}
+	h.Size++
+
+	// Expand heap capacity if necessary
+	if h.Size == h.Capacity {
+		h.Capacity = h.Capacity * 2
+		newSlice := make([]interface{}, h.Capacity)
+		copy(newSlice, h.items)
+		h.items = newSlice
 	}
 }
