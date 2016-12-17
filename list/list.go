@@ -11,8 +11,8 @@ type listNode struct {
 // It supports all types and does not change the order of what is inserted.
 //
 // KeyCompare -
-//	This function should compare a key to an object which contains
-//	a key of that type. The return values should be:
+//	This required function should compare a key to an object which
+//	contains a key of that type. The return values should be:
 //		-1 if key is less than object key
 //		0 if key is equal to object key
 //		1 if key is greater than object key
