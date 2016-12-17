@@ -42,3 +42,24 @@ func TestHeap_Insert(t *testing.T) {
 		t.Error("Expected", 9, "got", h.items[0])
 	}
 }
+
+func TestHeap_Remove(t *testing.T) {
+	h := NewHeap(func(a, b interface{}) int8 {
+		if a.(int) < b.(int) {
+			return -1
+		} else if a.(int) == b.(int) {
+			return 0
+		} else {
+			return 1
+		}
+	}, false, 2)
+
+	h.Insert(3)
+	h.Insert(5)
+	h.Insert(1)
+
+	root := h.Remove()
+	if root != 5 {
+		t.Error("Expected", 5, "got", root)
+	}
+}

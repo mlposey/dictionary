@@ -67,3 +67,34 @@ func (h *Heap) Insert(object interface{}) {
 		h.items = newSlice
 	}
 }
+
+// Remove removes and returns the root from the heap.
+//
+// Returns nil if the Heap is empty.
+func (h *Heap) Remove() interface{} {
+	if h.Size == 0 {
+		return nil
+	}
+	root := h.items[0]
+	h.Size--
+	h.items[0] = h.items[h.Size]
+
+	// Reheap the heap
+	var big uint = 1
+	var i uint = 0
+	for big < h.Size {
+		if big < h.Size-1 &&
+			h.Greater(h.items[big+1], h.items[big]) == 1 {
+			big++
+		}
+		if h.Greater(h.items[big], h.items[i]) == 1 {
+			h.items[i], h.items[big] = h.items[big], h.items[i]
+			i = big
+			big = 2*i + 1
+		} else {
+			break
+		}
+	}
+
+	return root
+}
