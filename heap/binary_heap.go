@@ -28,7 +28,7 @@ type Heap struct {
 // capacity - the initial capacity of the Heap
 //	  If not supplied, a default capacity is chosen.
 //
-// see Heap doc for valid comparator definitions.
+// see Heap doc for valid greater definitions.
 func NewHeap(greater func(interface{}, interface{}) int8, minHeap bool, capacity ...uint) *Heap {
 	var cap uint
 	if len(capacity) == 0 {
@@ -47,6 +47,32 @@ func NewHeap(greater func(interface{}, interface{}) int8, minHeap bool, capacity
 		Capacity: cap,
 		items:    make([]interface{}, cap),
 	}
+}
+
+// NewMinHeap creates and returns a new *Heap with the min-heap property.
+//
+// The root of a min-heap always contains the smallest key. Thus, Remove()
+// will return the smallest, in an abstract sense, object.
+//
+// capacity - the initial capacity of the Heap
+//	  If not supplied, a default capacity is chosen.
+//
+// see Heap doc for valid greater definitions.
+func NewMinHeap(greater func(interface{}, interface{}) int8, capacity ...uint) *Heap {
+	return NewHeap(greater, true, capacity)
+}
+
+// NewMaxHeap creates and returns a new *Heap with the max-heap property.
+//
+// The root of a max-heap always contains the largest key. Thus, Remove()
+// will return the largest, in an abstract sense, object.
+//
+// capacity - the initial capacity of the Heap
+//	  If not supplied, a default capacity is chosen.
+//
+// see Heap doc for valid greater definitions.
+func NewMaxHeap(greater func(interface{}, interface{}) int8, capacity ...uint) *Heap {
+	return NewHeap(greater, false, capacity)
 }
 
 // Insert adds an object to the Heap.
