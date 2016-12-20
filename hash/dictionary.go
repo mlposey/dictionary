@@ -17,7 +17,6 @@ type Dictionary struct {
 	// tableSize should always be a power of 2. This allows us to avoid
 	// mods in favor of ands.
 	tableSize uint
-	a         uint
 }
 
 // NewDictionary creates an empty Dictionary with an optional table size.
