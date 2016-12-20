@@ -17,6 +17,7 @@ type Dictionary struct {
 	// tableSize should always be a power of 2. This allows us to avoid
 	// mods in favor of ands.
 	tableSize uint
+	a         uint
 }
 
 // NewDictionary creates an empty Dictionary with an optional table size.
@@ -24,12 +25,12 @@ type Dictionary struct {
 // tableSize should be a power of two. If it is not, a higher tableSize
 // will be chosen which is a power of two.
 func NewDictionary(tableSize ...uint) *Dictionary {
-	cap := 8
+	var finalSize uint = 8
 	if len(tableSize) != 0 {
 		// Make capacity a power of two.
-		cap = math.Exp2(math.Ceil(math.Log2(tableSize[0])))
+		finalSize = uint(math.Exp2(math.Ceil(math.Log2(float64(tableSize[0])))))
 	}
-	return cap
+	return &Dictionary{tableSize: finalSize}
 }
 
 func (d *Dictionary) Insert(key interface{}, object interface{}) error {
@@ -49,16 +50,20 @@ func (d *Dictionary) Remove(key interface{}) error {
 // Universal hash procedures are provided for both string and uint. If
 // key is not either of those, it is assumed to implement the Hashable
 // interface which contains a Hash() function.
-func hashKey(key interface{}) uint {
+func (d *Dictionary) hashKey(key interface{}) uint {
 	switch key.(type) {
 	case string:
 		// TODO: universal string hash
-		return 0
+		var res uint = 13
+		for _, char := range key.(string) {
+			res *= 31 + uint(char)
+		}
+		return res & (d.tableSize - 1)
 	case uint:
 		// TODO: universal int hash
-		return 0
+		return key.(uint) & (d.tableSize - 1)
 	default:
-		return key.(Hashable).Hash()
+		return key.(Hashable).Hash() & (d.tableSize - 1)
 	}
 }
 
