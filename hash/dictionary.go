@@ -8,14 +8,14 @@ type Dictionary struct {
 	table []uint
 }
 
-func (d *Dictionary) Insert(key Hashable, object interface{}) error {
+func (d *Dictionary) Insert(key interface{}, object interface{}) error {
 	return nil
 }
 
-func (d *Dictionary) Get(key Hashable) interface{} {
+func (d *Dictionary) Get(key interface{}) interface{} {
 	return nil
 }
 
-func (d *Dictionary) Remove(key Hashable) error {
+func (d *Dictionary) Remove(key interface{}) error {
 	return nil
 }
