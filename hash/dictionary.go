@@ -55,9 +55,11 @@ func (d *Dictionary) hashKeyA(key interface{}) uint {
 	switch key.(type) {
 	case string:
 		// TODO: universal string hash
-		var res uint = 13
+
+		// djb2
+		var res uint = 5381
 		for _, char := range key.(string) {
-			res *= 31 + uint(char)
+			res = ((res << 5) + res) + uint(char)
 		}
 		return res
 	case uint:
