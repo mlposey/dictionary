@@ -59,7 +59,7 @@ func (d *Dictionary) hashKeyA(key interface{}) uint {
 		// djb2
 		var res uint = 5381
 		for _, char := range key.(string) {
-			res = ((res << 5) + res) + uint(char)
+			res *= 33 ^ uint(char)
 		}
 		return res
 	case uint:
