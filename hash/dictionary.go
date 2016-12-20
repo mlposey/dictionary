@@ -46,10 +46,12 @@ func (d *Dictionary) Remove(key interface{}) error {
 
 // hashKey hashes the key to a uint.
 //
+// This value is not guaranteed to be in the range [0, tableSize).
+//
 // Universal hash procedures are provided for both string and uint. If
 // key is not either of those, it is assumed to implement the Hashable
 // interface which contains a Hash() function.
-func (d *Dictionary) hashKey(key interface{}) uint {
+func (d *Dictionary) hashKeyA(key interface{}) uint {
 	switch key.(type) {
 	case string:
 		// TODO: universal string hash
@@ -57,13 +59,20 @@ func (d *Dictionary) hashKey(key interface{}) uint {
 		for _, char := range key.(string) {
 			res *= 31 + uint(char)
 		}
-		return res & (d.tableSize - 1)
+		return res
 	case uint:
 		// TODO: universal int hash
-		return key.(uint) & (d.tableSize - 1)
+		return key.(uint)
 	default:
-		return key.(Hashable).Hash() & (d.tableSize - 1)
+		return key.(Hashable).Hash()
 	}
+}
+
+// hashKey hashes a result of hashKeyA.
+//
+// This value is not guaranteed to be in the range [0, tableSize)
+func (d *Dictionary) hashKeyB(hashA uint) uint {
+	return hashA / d.tableSize
 }
 
 // Hashable is an interface for objects which can compute their hash values.
