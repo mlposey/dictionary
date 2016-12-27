@@ -21,14 +21,11 @@ import (
 //
 // TODO: concurrency
 // TODO: buckets
-// TODO: fnv hashes
 type Dictionary struct {
 	tables [kTableCount][]*Pair
 	hashes [kTableCount]HashFunction
 
 	// The number of possible hash values
-	// tableSize should always be a power of 2. This allows us to avoid
-	// mods in favor of ands.
 	tableSize int
 
 	// The number of items in the Dictionary
@@ -42,21 +39,18 @@ const (
 )
 
 // NewDictionary creates an empty Dictionary with an optional table size.
-//
-// tableSize should be a power of two. If it is not, a higher tableSize
-// will be chosen which is a power of two.
 func NewDictionary(tableSize ...int) *Dictionary {
 	// Acquire a capacity for the tables which is a power of two.
-	finalSize := 8
+	capacity := 8
 	if len(tableSize) != 0 {
-		finalSize = int(math.Exp2(math.Ceil(math.Log2(float64(tableSize[0])))))
+		capacity = tableSize[0]
 	}
 
 	// Initialize the Dictionary.
-	dict := &Dictionary{tableSize: finalSize}
+	dict := &Dictionary{tableSize: capacity}
 	dict.generateHashFunctions()
 	for i := range dict.tables {
-		dict.tables[i] = make([]*Pair, finalSize)
+		dict.tables[i] = make([]*Pair, capacity)
 	}
 	return dict
 }
@@ -78,12 +72,12 @@ func (d *Dictionary) Insert(key interface{}, object interface{}) {
 	const kMaxLoop = 1000
 
 	for i := 0; i < kMaxLoop; i++ {
-		var index, i int
+		var index, t int
 		// Try each table the key could be located in.
-		for ; i < kTableCount; i++ {
-			index = d.hashes[i](key) & (d.tableSize - 1)
-			if d.tables[i][index] == nil {
-				d.tables[i][index] = &Pair{
+		for ; t < kTableCount; t++ {
+			index = d.hashes[t](key) % d.tableSize
+			if d.tables[t][index] == nil {
+				d.tables[t][index] = &Pair{
 					Key:   key,
 					Value: object,
 				}
@@ -91,12 +85,12 @@ func (d *Dictionary) Insert(key interface{}, object interface{}) {
 				return
 			}
 		}
-		i--
+		t--
 
 		// Replace the object at the last checked index and attempt
 		// to re-home it in the next iteration.
-		old := d.tables[i][index]
-		d.tables[i][index] = &Pair{Key: key, Value: object}
+		old := d.tables[t][index]
+		d.tables[t][index] = &Pair{Key: key, Value: object}
 		key = old.Key
 		object = old.Value
 	}
@@ -114,7 +108,7 @@ func (d *Dictionary) Get(key interface{}) interface{} {
 
 	// Check each possible location for key.
 	for i := range d.tables {
-		index = d.hashes[i](key) & (d.tableSize - 1)
+		index = d.hashes[i](key) % d.tableSize
 		if d.tables[i][index] != nil && d.tables[i][index].Key == key {
 			return d.tables[i][index].Value
 		}
@@ -132,7 +126,7 @@ func (d *Dictionary) Remove(key interface{}) error {
 
 	// Check each possible location for key.
 	for i := range d.tables {
-		index = d.hashes[i](key) & (d.tableSize - 1)
+		index = d.hashes[i](key) % d.tableSize
 		if d.tables[i][index] != nil && d.tables[i][index].Key == key {
 			d.tables[i][index] = nil
 			d.Size--
@@ -146,18 +140,16 @@ func (d *Dictionary) Remove(key interface{}) error {
 //
 // The new table size will be 2^(ceil(log2(oldSize * 2))).
 func (d *Dictionary) resize(size ...int) {
-	var newSize int
 	if len(size) != 0 {
-		newSize = size[0]
+		d.tableSize = size[0]
 	} else {
-		newSize = int(math.Exp2(math.Ceil(math.Log2(float64(d.tableSize * 2)))))
+		d.tableSize *= 2
 	}
-	d.tableSize = newSize
 
 	// Create new tables with the increased size and swap them into d.
 	var oldTables [kTableCount][]*Pair
 	for i := range oldTables {
-		oldTables[i] = make([]*Pair, newSize)
+		oldTables[i] = make([]*Pair, d.tableSize)
 		oldTables[i], d.tables[i] = d.tables[i], oldTables[i]
 	}
 	d.Size = 0
@@ -185,7 +177,7 @@ func (d *Dictionary) generateHashFunctions() {
 				for i, char := range key.(string) {
 					res += int(char) * int(math.Pow(float64(factor), float64(kLen-i)))
 				}
-				return res
+				return int(math.Abs(float64(res))) // for overflows
 			case int:
 				// TODO: universal int hash
 				return factor * key.(int)
@@ -194,6 +186,7 @@ func (d *Dictionary) generateHashFunctions() {
 			}
 		}
 	}
+
 	// Make hash functions for each table.
 	for i := range d.hashes {
 		if i == 0 || i%2 == 0 {
