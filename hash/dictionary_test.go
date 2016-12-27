@@ -84,9 +84,7 @@ func TestDictionary_Get(t *testing.T) {
 //
 // Ensure that objects which exist can be removed and that the size is reduced
 // by 1 as a result.
-//
-// TODO: Write test for removing nonexistent object.
-func TestDictionary_Remove(t *testing.T) {
+func TestDictionary_Remove_Exists(t *testing.T) {
 	dict := NewDictionary()
 	dict.Insert("bob", 5)
 
@@ -94,5 +92,17 @@ func TestDictionary_Remove(t *testing.T) {
 
 	if err := dict.Remove("bob"); err != nil || dict.Size != oldSize-1 {
 		t.Error("Failed removing object from Dictionary")
+	}
+}
+
+// Test for *Dictionary.Remove
+//
+// Ensure that calling Remove with a nonexistent key returns an error.
+func TestDictionary_Remove_NoExists(t *testing.T) {
+	dict := NewDictionary()
+	dict.Insert("bob", 5)
+
+	if err := dict.Remove("obb"); err == nil {
+		t.Error("Failed removing nonexistent object from Dictionary")
 	}
 }
