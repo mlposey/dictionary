@@ -160,6 +160,7 @@ func (d *Dictionary) resize(size ...int) {
 		oldTables[i] = make([]*Pair, newSize)
 		oldTables[i], d.tables[i] = d.tables[i], oldTables[i]
 	}
+	d.Size = 0
 
 	// Insert the keys from the old tables into the new ones.
 	for t := range oldTables {

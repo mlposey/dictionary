@@ -61,13 +61,25 @@ func TestDictionary_Insert(t *testing.T) {
 	}
 }
 
+// Test for *Dictionary.Insert
+//
+// Ensure that inserting into a full dictionary triggers a resize.
+func TestDictionary_Insert_Full(t *testing.T) {
+	dict := NewDictionary(2)
+	dict.Insert("bob", 3)
+	dict.Insert("bbo", 5)
+	dict.Insert("obb", 2)
+
+	if dict.Size != 3 {
+		t.Error("Failed to resize full Dictionary")
+	}
+}
+
 // Test for *Dictionary.Get
 //
 // Ensure that string keys containing the same set of characters can be
 // retrieved as distinct objects.
-//
-// TODO: Write test for retrieving nonexistent object.
-func TestDictionary_Get(t *testing.T) {
+func TestDictionary_Get_Exists(t *testing.T) {
 	dict := NewDictionary()
 	dict.Insert("bob", 3)
 	dict.Insert("bbo", 5)
@@ -77,6 +89,18 @@ func TestDictionary_Get(t *testing.T) {
 		dict.Get("bbo").(int) != 5 ||
 		dict.Get("obb").(int) != 2 {
 		t.Error("Error retrieving values from Dictionary")
+	}
+}
+
+// Test for *Dictionary.Get
+//
+// Ensure that calling Get with a nonexistent key returns nil.
+func TestDictionary_Get_NoExists(t *testing.T) {
+	dict := NewDictionary()
+	dict.Insert("bob", 3)
+
+	if dict.Get("obb") != nil {
+		t.Error("Error retrieving nonexistent value from Dictionary")
 	}
 }
 
