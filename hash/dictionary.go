@@ -67,7 +67,7 @@ func NewDictionary(tableSize ...int) *Dictionary {
 // Its hash function should not perform a modulus-type bounding operation since
 // this is done internally. All other functions which have key parameters also
 // make this assumption.
-func (d *Dictionary) Insert(key interface{}, object interface{}) error {
+func (d *Dictionary) Insert(key interface{}, object interface{}) {
 	if d.Size == d.tableSize {
 		d.resize()
 	}
@@ -88,7 +88,7 @@ func (d *Dictionary) Insert(key interface{}, object interface{}) error {
 					Value: object,
 				}
 				d.Size++
-				return nil
+				return
 			}
 		}
 		i--
@@ -102,7 +102,6 @@ func (d *Dictionary) Insert(key interface{}, object interface{}) error {
 	}
 	d.rehash()
 	d.Insert(key, object)
-	return nil
 }
 
 // Get retrieves an object from the Dictionary.
