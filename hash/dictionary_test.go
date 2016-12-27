@@ -45,6 +45,12 @@ func TestNewDictionary_KeepSize(t *testing.T) {
 	}
 }
 
+// Test for *Dictionary.Insert
+//
+// Ensure that string keys containing the same set of characters do not
+// cause an infinite loop but are inserted resulting in a size increment of 1.
+//
+// TODO: Write tests for int and Hashable types
 func TestDictionary_Insert(t *testing.T) {
 	dict := NewDictionary(30)
 	dict.Insert("bob", 3)
@@ -55,6 +61,12 @@ func TestDictionary_Insert(t *testing.T) {
 	}
 }
 
+// Test for *Dictionary.Get
+//
+// Ensure that string keys containing the same set of characters can be
+// retrieved as distinct objects.
+//
+// TODO: Write test for retrieving nonexistent object.
 func TestDictionary_Get(t *testing.T) {
 	dict := NewDictionary()
 	dict.Insert("bob", 3)
@@ -68,6 +80,12 @@ func TestDictionary_Get(t *testing.T) {
 	}
 }
 
+// Test for *Dictionary.Remove
+//
+// Ensure that objects which exist can be removed and that the size is reduced
+// by 1 as a result.
+//
+// TODO: Write test for removing nonexistent object.
 func TestDictionary_Remove(t *testing.T) {
 	dict := NewDictionary()
 	dict.Insert("bob", 5)
