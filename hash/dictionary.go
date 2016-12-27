@@ -33,8 +33,6 @@ type Dictionary struct {
 
 	// The number of items in the Dictionary
 	Size int
-
-	hashConstant int
 }
 
 const (
@@ -48,15 +46,14 @@ const (
 // tableSize should be a power of two. If it is not, a higher tableSize
 // will be chosen which is a power of two.
 func NewDictionary(tableSize ...int) *Dictionary {
+	// Acquire a capacity for the tables which is a power of two.
 	finalSize := 8
 	if len(tableSize) != 0 {
-		// Make capacity a power of two.
 		finalSize = int(math.Exp2(math.Ceil(math.Log2(float64(tableSize[0])))))
 	}
-	dict := &Dictionary{
-		tableSize:    finalSize,
-		hashConstant: rand.Intn(100) + 1,
-	}
+
+	// Initialize the Dictionary.
+	dict := &Dictionary{tableSize: finalSize}
 	dict.generateHashFunctions()
 	for i := range dict.tables {
 		dict.tables[i] = make([]*Pair, finalSize)
