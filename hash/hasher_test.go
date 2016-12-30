@@ -2,6 +2,7 @@ package hash
 
 import "testing"
 
+// Test for *StringHasher.Hash
 func TestStringHasher_Hash(t *testing.T) {
 	var hasher Hasher = NewStringHasher()
 

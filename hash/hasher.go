@@ -1,6 +1,8 @@
 package hash
 
 import (
+	"hash"
+	"hash/fnv"
 	"math/rand"
 	"sync"
 )
@@ -67,3 +69,24 @@ func (h *StringHasher) makeTables() {
 }
 
 //----------end StringHasher----------
+
+//----------begin Int32Hasher----------
+
+// Int32Hasher wraps built-in fnv hashing in the Hasher interface.
+type Int32Hasher struct {
+	fnvHash hash.Hash32
+}
+
+// NewInt32Hasher initializes and returns an *Int32Hasher object.
+func NewInt32Hasher() *Int32Hasher {
+	return &Int32Hasher{fnv.New32()}
+}
+
+// Hash uses built-in fnv hashing to hash an int32 value.
+func (h *Int32Hasher) Hash(x interface{}) uint32 {
+	h.fnvHash.Reset()
+	h.fnvHash.Write([]byte(x.(int32)))
+	return h.fnvHash.Sum32()
+}
+
+//----------end Int32Hasher----------
