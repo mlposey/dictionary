@@ -180,10 +180,8 @@ func (d *Dictionary) resize(size ...int) {
 	for t := range oldTables {
 		for b := range oldTables[t] {
 			for i := range oldTables[t][b] {
-				if oldTables[t][b][i] != nil {
-					d.Insert(oldTables[t][b][i].Key,
-						oldTables[t][b][i].Value)
-				}
+				d.Insert(oldTables[t][b][i].Key,
+					oldTables[t][b][i].Value)
 			}
 		}
 	}
