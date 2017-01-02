@@ -17,3 +17,9 @@ func TestStringHasher_Hash(t *testing.T) {
 		t.Error("collisions in StringHasher")
 	}
 }
+
+func TestStringHasher_Reseed(t *testing.T) {
+	var hasher Hasher = NewStringHasher()
+
+	hasher.(*StringHasher).Reseed()
+}

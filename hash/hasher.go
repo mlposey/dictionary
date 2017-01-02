@@ -1,14 +1,22 @@
 package hash
 
 import (
-	"hash"
-	"hash/fnv"
 	"math/rand"
 	"sync"
+	"time"
 )
 
 type Hasher interface {
-	Hash(x interface{}) uint32
+	// TODO: This should be returning an uint32.
+	Hash(x interface{}) int
+	Reseed()
+}
+
+// MakeRand takes a nonzero value and replaces it with a pseudorandom number.
+func MakeRand(x *uint32) {
+	*x ^= *x << 13
+	*x ^= *x >> 17
+	*x ^= *x << 5
 }
 
 //----------begin StringHasher----------
@@ -17,6 +25,9 @@ type Hasher interface {
 type StringHasher struct {
 	tableCount int
 	tableSize  int
+
+	shuffleSeed uint32
+
 	// 4 tables, each storing a random number for the possible ascii values
 	tables [][]uint32
 }
@@ -24,8 +35,9 @@ type StringHasher struct {
 // New initializes and returns a new *StringHasher object.
 func NewStringHasher() *StringHasher {
 	hasher := &StringHasher{
-		tableCount: 4,
-		tableSize:  256,
+		tableCount:  4,
+		tableSize:   256,
+		shuffleSeed: uint32(time.Now().Hour()),
 	}
 
 	hasher.tables = make([][]uint32, hasher.tableCount)
@@ -38,7 +50,7 @@ func NewStringHasher() *StringHasher {
 }
 
 // Hash uses tabulation hashing to turn a string into a uint32 value.
-func (h *StringHasher) Hash(x interface{}) uint32 {
+func (h *StringHasher) Hash(x interface{}) int {
 	if len(x.(string)) > h.tableCount {
 		return h.Hash(x.(string)[0:h.tableCount]) ^
 			h.Hash(x.(string)[h.tableCount:])
@@ -48,7 +60,22 @@ func (h *StringHasher) Hash(x interface{}) uint32 {
 		for i := 1; i < h.tableCount && i < xlen; i++ {
 			result ^= h.tables[i][x.(string)[i]]
 		}
-		return result
+		return int(result)
+	}
+}
+
+// TODO: All Hasher implementations should have a Shuffle-like function.
+// However, it likely needs a new name. Regen? Reseed?
+
+// shuffle rearranges the values stored in each table.
+func (h *StringHasher) Reseed() {
+	// Fisher-Yates shuffle
+	for t := range h.tables {
+		for i := 0; i < h.tableSize; i++ {
+			target := int(h.shuffleSeed) % h.tableSize
+			h.tables[t][i], h.tables[t][target] = h.tables[t][target], h.tables[t][i]
+			MakeRand(&h.shuffleSeed)
+		}
 	}
 }
 
@@ -70,23 +97,23 @@ func (h *StringHasher) makeTables() {
 
 //----------end StringHasher----------
 
-//----------begin Int32Hasher----------
+//----------begin integer hashing----------
 
-// Int32Hasher wraps built-in fnv hashing in the Hasher interface.
-type Int32Hasher struct {
-	fnvHash hash.Hash32
+type IntHasher struct {
+	int
+	factor uint32
 }
 
-// NewInt32Hasher initializes and returns an *Int32Hasher object.
-func NewInt32Hasher() *Int32Hasher {
-	return &Int32Hasher{fnv.New32()}
+func NewIntHasher() *IntHasher {
+	return &IntHasher{factor: rand.Uint32()}
 }
 
-// Hash uses built-in fnv hashing to hash an int32 value.
-func (h *Int32Hasher) Hash(x interface{}) uint32 {
-	h.fnvHash.Reset()
-	h.fnvHash.Write([]byte(x.(int32)))
-	return h.fnvHash.Sum32()
+func (i *IntHasher) Hash(x interface{}) int {
+	return int(i.factor) * i.int
 }
 
-//----------end Int32Hasher----------
+func (i *IntHasher) Reseed() {
+	MakeRand(&i.factor)
+}
+
+//----------end integer hashing----------
