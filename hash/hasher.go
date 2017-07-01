@@ -6,6 +6,7 @@ import (
 	"time"
 )
 
+// Hasher is a generic form of a hash function.
 type Hasher interface {
 	// TODO: This should be returning an uint32.
 	Hash(x interface{}) int
@@ -19,9 +20,10 @@ func MakeRand(x *uint32) {
 	*x ^= *x << 5
 }
 
-//----------begin StringHasher----------
-
 // StringHasher uses tabulation hashing to hash strings.
+//
+// This implementation uses four tables, each with 256 random uint32 values. For more
+// information on tabulation hashing, see https://en.wikipedia.org/wiki/Tabulation_hashing
 type StringHasher struct {
 	tableCount int
 	tableSize  int
@@ -40,12 +42,8 @@ func NewStringHasher() *StringHasher {
 		shuffleSeed: uint32(time.Now().Hour()),
 	}
 
-	hasher.tables = make([][]uint32, hasher.tableCount)
-	for t := range hasher.tables {
-		hasher.tables[t] = make([]uint32, hasher.tableSize)
-	}
+	hasher.GenerateTables()
 
-	hasher.makeTables()
 	return hasher
 }
 
@@ -79,8 +77,13 @@ func (h *StringHasher) Reseed() {
 	}
 }
 
-// makeTables assigns to each table index a random uint32 value.
-func (h *StringHasher) makeTables() {
+// GenerateTables creates a set of tables for tabulation hashing.
+func (h *StringHasher) GenerateTables() {
+	h.tables = make([][]uint32, h.tableCount)
+	for t := range h.tables {
+		h.tables[t] = make([]uint32, h.tableSize)
+	}
+
 	wg := &sync.WaitGroup{}
 	wg.Add(h.tableCount)
 
@@ -94,10 +97,6 @@ func (h *StringHasher) makeTables() {
 	}
 	wg.Wait()
 }
-
-//----------end StringHasher----------
-
-//----------begin integer hashing----------
 
 type IntHasher struct {
 	int
@@ -115,5 +114,3 @@ func (i *IntHasher) Hash(x interface{}) int {
 func (i *IntHasher) Reseed() {
 	MakeRand(&i.factor)
 }
-
-//----------end integer hashing----------

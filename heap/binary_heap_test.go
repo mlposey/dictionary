@@ -2,19 +2,21 @@ package heap
 
 import "testing"
 
+func heapComparator(a, b interface{}) int8 {
+	if a.(int) < b.(int) {
+		return -1
+	} else if a.(int) == b.(int) {
+		return 0
+	} else {
+		return 1
+	}
+}
+
 // Test NewHeap
 func TestNewHeap(t *testing.T) {
-	h := NewHeap(func(a, b interface{}) int8 {
-		if a.(int) < b.(int) {
-			return -1
-		} else if a.(int) == b.(int) {
-			return 0
-		} else {
-			return 1
-		}
-	}, false)
+	h := NewHeap(heapComparator, false)
 
-	if h.Capacity != 20 {
+	if h.Capacity != kDefaultHeapCapacity {
 		t.Error("Wrong initial capacity of Heap")
 	}
 	if len(h.items) != int(h.Capacity) {
@@ -24,15 +26,7 @@ func TestNewHeap(t *testing.T) {
 
 // Test *Heap.Insert
 func TestHeap_Insert(t *testing.T) {
-	h := NewHeap(func(a, b interface{}) int8 {
-		if a.(int) < b.(int) {
-			return -1
-		} else if a.(int) == b.(int) {
-			return 0
-		} else {
-			return 1
-		}
-	}, false, 2)
+	h := NewHeap(heapComparator, false, 2)
 
 	h.Insert(3)
 	h.Insert(5)
@@ -43,16 +37,22 @@ func TestHeap_Insert(t *testing.T) {
 	}
 }
 
+// Test *Heap.Insert
+//
+// Heap should allow objects of duplicate weights.
+func TestHeap_Insert_Duplicate(t *testing.T) {
+	h := NewMinHeap(heapComparator)
+
+	h.Insert(3)
+	h.Insert(3)
+
+	if h.Size != 2 {
+		t.Error("Could not insert objects with duplicate weights")
+	}
+}
+
 func TestHeap_Remove(t *testing.T) {
-	h := NewHeap(func(a, b interface{}) int8 {
-		if a.(int) < b.(int) {
-			return -1
-		} else if a.(int) == b.(int) {
-			return 0
-		} else {
-			return 1
-		}
-	}, false, 2)
+	h := NewHeap(heapComparator, false, 2)
 
 	h.Insert(3)
 	h.Insert(5)
@@ -61,5 +61,16 @@ func TestHeap_Remove(t *testing.T) {
 	root := h.Remove()
 	if root != 5 {
 		t.Error("Expected", 5, "got", root)
+	}
+}
+
+// Test *Heap.Remove
+//
+// Calling remove on an empty heap should return nil.
+func TestHeap_Remove_Empty(t *testing.T) {
+	h := NewMinHeap(heapComparator)
+
+	if h.Remove() != nil {
+		t.Error("Encountered problem removing from empty Heap")
 	}
 }

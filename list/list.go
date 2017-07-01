@@ -6,7 +6,7 @@ type listNode struct {
 	prev, next *listNode
 }
 
-// List is a double-linked list.
+// List is a doubly-linked list.
 //
 // It supports all types and does not change the order of what is inserted.
 //
@@ -77,7 +77,9 @@ func (l *List) RemoveEnd() interface{} {
 	return node.object
 }
 
-// Remove removes and returns an object from the List.
+// Remove removes and returns an object (with a matching key) from the List.
+//
+// The comparison is done with List.KeyCompare.
 func (l *List) Remove(key interface{}) interface{} {
 	n := l.head
 	for n != nil {

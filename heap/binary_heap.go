@@ -21,6 +21,11 @@ type Heap struct {
 	items []interface{}
 }
 
+const (
+	// The default capacity of Heap if not specified when calling NewHeap
+	kDefaultHeapCapacity = 20
+)
+
 // NewHeap creates a new *Heap.
 //
 // minHeap - true if Heap should be a min-heap; false otherwise
@@ -30,12 +35,13 @@ type Heap struct {
 //
 // see Heap doc for valid greater definitions.
 func NewHeap(greater func(interface{}, interface{}) int8, minHeap bool, capacity ...uint) *Heap {
-	var cap uint
+	var finalCapacity uint
 	if len(capacity) == 0 {
-		cap = 20
+		finalCapacity = kDefaultHeapCapacity
 	} else {
-		cap = capacity[0]
+		finalCapacity = capacity[0]
 	}
+
 	comp := greater
 	if minHeap {
 		comp = func(a, b interface{}) int8 {
@@ -44,8 +50,8 @@ func NewHeap(greater func(interface{}, interface{}) int8, minHeap bool, capacity
 	}
 	return &Heap{
 		Greater:  comp,
-		Capacity: cap,
-		items:    make([]interface{}, cap),
+		Capacity: finalCapacity,
+		items:    make([]interface{}, finalCapacity),
 	}
 }
 
@@ -59,7 +65,7 @@ func NewHeap(greater func(interface{}, interface{}) int8, minHeap bool, capacity
 //
 // see Heap doc for valid greater definitions.
 func NewMinHeap(greater func(interface{}, interface{}) int8, capacity ...uint) *Heap {
-	return NewHeap(greater, true, capacity)
+	return NewHeap(greater, true, capacity...)
 }
 
 // NewMaxHeap creates and returns a new *Heap with the max-heap property.
@@ -72,7 +78,7 @@ func NewMinHeap(greater func(interface{}, interface{}) int8, capacity ...uint) *
 //
 // see Heap doc for valid greater definitions.
 func NewMaxHeap(greater func(interface{}, interface{}) int8, capacity ...uint) *Heap {
-	return NewHeap(greater, false, capacity)
+	return NewHeap(greater, false, capacity...)
 }
 
 // Insert adds an object to the Heap.
