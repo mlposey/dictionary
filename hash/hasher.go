@@ -5,6 +5,7 @@ import (
 	"sync"
 )
 
+// Hasher is a generic form of a hash function.
 type Hasher interface {
 	Hash(x interface{}) uint32
 }
