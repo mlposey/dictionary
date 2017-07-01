@@ -2,17 +2,19 @@ package heap
 
 import "testing"
 
+func heapComparator(a, b interface{}) int8 {
+	if a.(int) < b.(int) {
+		return -1
+	} else if a.(int) == b.(int) {
+		return 0
+	} else {
+		return 1
+	}
+}
+
 // Test NewHeap
 func TestNewHeap(t *testing.T) {
-	h := NewHeap(func(a, b interface{}) int8 {
-		if a.(int) < b.(int) {
-			return -1
-		} else if a.(int) == b.(int) {
-			return 0
-		} else {
-			return 1
-		}
-	}, false)
+	h := NewHeap(heapComparator, false)
 
 	if h.Capacity != kDefaultHeapCapacity {
 		t.Error("Wrong initial capacity of Heap")
@@ -24,15 +26,7 @@ func TestNewHeap(t *testing.T) {
 
 // Test *Heap.Insert
 func TestHeap_Insert(t *testing.T) {
-	h := NewHeap(func(a, b interface{}) int8 {
-		if a.(int) < b.(int) {
-			return -1
-		} else if a.(int) == b.(int) {
-			return 0
-		} else {
-			return 1
-		}
-	}, false, 2)
+	h := NewHeap(heapComparator, false, 2)
 
 	h.Insert(3)
 	h.Insert(5)
@@ -44,15 +38,7 @@ func TestHeap_Insert(t *testing.T) {
 }
 
 func TestHeap_Remove(t *testing.T) {
-	h := NewHeap(func(a, b interface{}) int8 {
-		if a.(int) < b.(int) {
-			return -1
-		} else if a.(int) == b.(int) {
-			return 0
-		} else {
-			return 1
-		}
-	}, false, 2)
+	h := NewHeap(heapComparator, false, 2)
 
 	h.Insert(3)
 	h.Insert(5)
