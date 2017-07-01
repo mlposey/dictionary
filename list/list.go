@@ -6,7 +6,7 @@ type listNode struct {
 	prev, next *listNode
 }
 
-// List is a double-linked list.
+// List is a doubly-linked list.
 //
 // It supports all types and does not change the order of what is inserted.
 //
