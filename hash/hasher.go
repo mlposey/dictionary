@@ -9,9 +9,10 @@ type Hasher interface {
 	Hash(x interface{}) uint32
 }
 
-//----------begin StringHasher----------
-
 // StringHasher uses tabulation hashing to hash strings.
+//
+// This implementation uses four tables, each with 256 random uint32 values. For more
+// information on tabulation hashing, see https://en.wikipedia.org/wiki/Tabulation_hashing
 type StringHasher struct {
 	tableCount int
 	tableSize  int
@@ -65,5 +66,3 @@ func (h *StringHasher) makeTables() {
 	}
 	wg.Wait()
 }
-
-//----------end StringHasher----------

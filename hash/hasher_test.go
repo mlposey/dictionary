@@ -2,6 +2,8 @@ package hash
 
 import "testing"
 
+// *StringHasher.Hash should create unique results for different permutations
+// of the same string.
 func TestStringHasher_Hash(t *testing.T) {
 	var hasher Hasher = NewStringHasher()
 
