@@ -65,7 +65,7 @@ func NewHeap(greater func(interface{}, interface{}) int8, minHeap bool, capacity
 //
 // see Heap doc for valid greater definitions.
 func NewMinHeap(greater func(interface{}, interface{}) int8, capacity ...uint) *Heap {
-	return NewHeap(greater, true, capacity)
+	return NewHeap(greater, true, capacity...)
 }
 
 // NewMaxHeap creates and returns a new *Heap with the max-heap property.
@@ -78,7 +78,7 @@ func NewMinHeap(greater func(interface{}, interface{}) int8, capacity ...uint) *
 //
 // see Heap doc for valid greater definitions.
 func NewMaxHeap(greater func(interface{}, interface{}) int8, capacity ...uint) *Heap {
-	return NewHeap(greater, false, capacity)
+	return NewHeap(greater, false, capacity...)
 }
 
 // Insert adds an object to the Heap.
