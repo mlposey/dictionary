@@ -49,3 +49,14 @@ func TestHeap_Remove(t *testing.T) {
 		t.Error("Expected", 5, "got", root)
 	}
 }
+
+// Test *Heap.Remove
+//
+// Calling remove on an empty heap should return nil.
+func TestHeap_Remove_Empty(t *testing.T) {
+	h := NewMinHeap(heapComparator)
+
+	if h.Remove() != nil {
+		t.Error("Encountered problem removing from empty Heap")
+	}
+}
