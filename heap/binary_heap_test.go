@@ -14,7 +14,7 @@ func TestNewHeap(t *testing.T) {
 		}
 	}, false)
 
-	if h.Capacity != 20 {
+	if h.Capacity != kDefaultHeapCapacity {
 		t.Error("Wrong initial capacity of Heap")
 	}
 	if len(h.items) != int(h.Capacity) {
