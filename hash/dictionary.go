@@ -2,9 +2,11 @@ package hash
 
 import (
 	"errors"
-	"math"
-	"math/rand"
 )
+
+// Each slot in a table holds a Bucket. Each Bucket can hold no more than
+// kBucketCapacity *Pairs.
+type Bucket []*Pair
 
 // Dictionary is a hash table for large volume data sets.
 //
@@ -20,10 +22,9 @@ import (
 //	Remove - Worst-case O(1)
 //
 // TODO: concurrency
-// TODO: buckets
 type Dictionary struct {
-	tables [kTableCount][]*Pair
-	hashes [kTableCount]HashFunction
+	tables [kTableCount][]Bucket
+	hashes [kTableCount]Hasher
 
 	// The number of possible hash values
 	tableSize int
@@ -36,6 +37,11 @@ const (
 	// The number of tables in the Dictionary
 	// This is also the number of hash functions in use.
 	kTableCount = 2
+
+	// As per "Efficient Hash Probes on Modern Processors" by Kenneth A.
+	// Ross, a bucket capacity of 4 with two tables will provide a load
+	// factor of 0.976.
+	kBucketCapacity = 4
 )
 
 // NewDictionary creates an empty Dictionary with an optional table size.
@@ -46,11 +52,9 @@ func NewDictionary(tableSize ...int) *Dictionary {
 		capacity = tableSize[0]
 	}
 
-	// Initialize the Dictionary.
 	dict := &Dictionary{tableSize: capacity}
-	dict.generateHashFunctions()
 	for i := range dict.tables {
-		dict.tables[i] = make([]*Pair, capacity)
+		dict.tables[i] = make([]Bucket, capacity)
 	}
 	return dict
 }
@@ -62,6 +66,17 @@ func NewDictionary(tableSize ...int) *Dictionary {
 // this is done internally. All other functions which have key parameters also
 // make this assumption.
 func (d *Dictionary) Insert(key interface{}, object interface{}) {
+	// If this is the first insertion, determine if an in-house
+	// hash function can be used for this and future hashing.
+	if d.hashes[0] == nil {
+		switch key.(type) {
+		case string:
+			d.generateStringHashers()
+		case int32:
+			d.generateInt32Hashers()
+		}
+	}
+
 	if d.Size == d.tableSize {
 		d.resize()
 	}
@@ -71,31 +86,36 @@ func (d *Dictionary) Insert(key interface{}, object interface{}) {
 	// Hash Probes on Modern Processors" by Kenneth A. Ross.
 	const kMaxLoop = 1000
 
-	for i := 0; i < kMaxLoop; i++ {
-		var index, t int
-		// Try each table the key could be located in.
-		for ; t < kTableCount; t++ {
-			index = d.hashes[t](key) % d.tableSize
-			if d.tables[t][index] == nil {
-				d.tables[t][index] = &Pair{
-					Key:   key,
-					Value: object,
-				}
-				d.Size++
-				return
-			}
-		}
-		t--
+	for {
+		for i := 0; i < kMaxLoop; i++ {
+			var index, t int
+			// Try each table the key could be located in.
+			for ; t < kTableCount; t++ {
+				index = d.hashes[t].Hash(key) % d.tableSize
 
-		// Replace the object at the last checked index and attempt
-		// to re-home it in the next iteration.
-		old := d.tables[t][index]
-		d.tables[t][index] = &Pair{Key: key, Value: object}
-		key = old.Key
-		object = old.Value
+				// Is there even room in this bucket?
+				if len(d.tables[t][index]) != kBucketCapacity {
+					d.tables[t][index] = append(d.tables[t][index], &Pair{
+						Key:   key,
+						Value: object,
+					})
+					d.Size++
+					return
+				}
+			}
+			t--
+
+			// Replace the object at the last checked index and attempt
+			// to re-home it in the next iteration.
+			old := d.tables[t][index][0]
+			d.tables[t][index][0] = &Pair{Key: key, Value: object}
+			key = old.Key
+			object = old.Value
+		}
+		d.rehash()
+		// TODO: Insert may loop forever.
 	}
-	d.rehash()
-	d.Insert(key, object)
+
 }
 
 // Get retrieves an object from the Dictionary.
@@ -108,9 +128,11 @@ func (d *Dictionary) Get(key interface{}) interface{} {
 
 	// Check each possible location for key.
 	for i := range d.tables {
-		index = d.hashes[i](key) % d.tableSize
-		if d.tables[i][index] != nil && d.tables[i][index].Key == key {
-			return d.tables[i][index].Value
+		index = d.hashes[i].Hash(key) % d.tableSize
+		for b := range d.tables[i][index] {
+			if d.tables[i][index][b].Key == key {
+				return d.tables[i][index][b].Value
+			}
 		}
 	}
 	return nil
@@ -126,19 +148,19 @@ func (d *Dictionary) Remove(key interface{}) error {
 
 	// Check each possible location for key.
 	for i := range d.tables {
-		index = d.hashes[i](key) % d.tableSize
-		if d.tables[i][index] != nil && d.tables[i][index].Key == key {
-			d.tables[i][index] = nil
-			d.Size--
-			return nil
+		index = d.hashes[i].Hash(key) % d.tableSize
+		for b := range d.tables[i][index] {
+			if d.tables[i][index][b].Key == key {
+				d.tables[i][index] = append(d.tables[i][index][:b], d.tables[i][index][b+1:]...)
+				d.Size--
+				return nil
+			}
 		}
 	}
 	return errors.New("Key not found")
 }
 
 // resize increases the size of the table and rehashes all keys.
-//
-// The new table size will be 2^(ceil(log2(oldSize * 2))).
 func (d *Dictionary) resize(size ...int) {
 	if len(size) != 0 {
 		d.tableSize = size[0]
@@ -147,72 +169,44 @@ func (d *Dictionary) resize(size ...int) {
 	}
 
 	// Create new tables with the increased size and swap them into d.
-	var oldTables [kTableCount][]*Pair
+	var oldTables [kTableCount][]Bucket
 	for i := range oldTables {
-		oldTables[i] = make([]*Pair, d.tableSize)
+		oldTables[i] = make([]Bucket, d.tableSize)
 		oldTables[i], d.tables[i] = d.tables[i], oldTables[i]
 	}
 	d.Size = 0
 
 	// Insert the keys from the old tables into the new ones.
 	for t := range oldTables {
-		for i := range oldTables[t] {
-			if oldTables[t][i] != nil {
-				d.Insert(oldTables[t][i].Key, oldTables[t][i].Value)
+		for b := range oldTables[t] {
+			for i := range oldTables[t][b] {
+				d.Insert(oldTables[t][b][i].Key,
+					oldTables[t][b][i].Value)
 			}
 		}
 	}
 }
 
-// generateHashFunctions creates kTableCount hash functions for the Dictionary.
-func (d *Dictionary) generateHashFunctions() {
-	// Make a hash function that uses a certain unique factor.
-	generate := func(factor int) HashFunction {
-		return func(key interface{}) int {
-			switch key.(type) {
-			case string:
-				// TODO: universal string hash
-				var res int
-				kLen := len(key.(string))
-				for i, char := range key.(string) {
-					res += int(char) * int(math.Pow(float64(factor), float64(kLen-i)))
-				}
-				return int(math.Abs(float64(res))) // for overflows
-			case int:
-				// TODO: universal int hash
-				return factor * key.(int)
-			default:
-				return factor * key.(Hashable).Hash()
-			}
-		}
-	}
-
-	// Make hash functions for each table.
+func (d *Dictionary) generateStringHashers() {
 	for i := range d.hashes {
-		if i == 0 || i%2 == 0 {
-			d.hashes[i] = generate(rand.Intn(100) + 1)
-		} else {
-			d.hashes[i] = func(key interface{}) int {
-				return d.hashes[i-1](key) / d.tableSize
-			}
-		}
+		d.hashes[i] = NewStringHasher()
+	}
+}
+
+func (d *Dictionary) generateInt32Hashers() {
+	for i := range d.hashes {
+		d.hashes[i] = NewIntHasher()
 	}
 }
 
 // rehash creates new hash functions and rebuilds the Dictionary.
 func (d *Dictionary) rehash() {
-	d.generateHashFunctions()
+	for i := range d.hashes {
+		d.hashes[i].Reseed()
+	}
 
 	// Use the new hash function to determine key locations.
 	d.resize(d.tableSize)
-}
-
-// HashFunction is a function which turns a key into an integer.
-type HashFunction func(key interface{}) int
-
-// Hashable is an interface for objects which can compute their hash values.
-type Hashable interface {
-	Hash() int
 }
 
 // Pair is an ordered pair of a key and an object identified by that key.

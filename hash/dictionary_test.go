@@ -1,6 +1,10 @@
 package hash
 
-import "testing"
+import (
+	"github.com/satori/go.uuid"
+	"math/rand"
+	"testing"
+)
 
 // TODO: Write tests for NewDictionary
 
@@ -10,13 +14,25 @@ import "testing"
 // cause an infinite loop but are inserted resulting in a size increment of 1.
 //
 // TODO: Write tests for int and Hashable types
-func TestDictionary_Insert(t *testing.T) {
+func TestDictionary_Insert_String(t *testing.T) {
 	dict := NewDictionary(30)
 	dict.Insert("bob", 3)
 	dict.Insert("bbo", 5)
 	dict.Insert("obb", 2)
 	if dict.Size != 3 {
-		t.Error("Error inserting values in Dictionary")
+		t.Error("Error inserting string in Dictionary")
+	}
+}
+
+// Test for *Dictionary.Insert
+//
+// Ensure that the proper Hasher is used when the key is of type int32.
+func TestDictionary_Insert_Int32(t *testing.T) {
+	dict := NewDictionary()
+	var key int32 = 3
+	dict.Insert(key, 2)
+	if dict.Get(key).(int) != 2 {
+		t.Error("Error inserting int32 in Dictionary")
 	}
 }
 
@@ -87,5 +103,47 @@ func TestDictionary_Remove_NoExists(t *testing.T) {
 
 	if err := dict.Remove("obb"); err == nil {
 		t.Error("Failed removing nonexistent object from Dictionary")
+	}
+}
+
+func BenchmarkDictionary_Insert(b *testing.B) {
+	d := NewDictionary(b.N)
+	for i := 0; i < b.N; i++ {
+		d.Insert(uuid.NewV4().String(), rand.Int())
+	}
+}
+
+func BenchmarkMap_Insert(b *testing.B) {
+	m := make(map[string]int, b.N)
+	for i := 0; i < b.N; i++ {
+		m[uuid.NewV4().String()] = rand.Int()
+	}
+}
+
+func BenchmarkDictionary_Get(b *testing.B) {
+	var keys []string
+	d := NewDictionary(b.N)
+	for i := 0; i < b.N; i++ {
+		d.Insert(uuid.NewV4().String(), rand.Int())
+	}
+
+	var vals []int
+
+	for _, key := range keys {
+		vals = append(vals, d.Get(key).(int))
+	}
+}
+
+func BenchmarkMap_Get(b *testing.B) {
+	var keys []string
+	m := make(map[string]int, b.N)
+	for i := 0; i < b.N; i++ {
+		m[uuid.NewV4().String()] = rand.Int()
+	}
+
+	var vals []int
+
+	for _, key := range keys {
+		vals = append(vals, m[key])
 	}
 }
