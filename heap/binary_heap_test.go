@@ -37,6 +37,20 @@ func TestHeap_Insert(t *testing.T) {
 	}
 }
 
+// Test *Heap.Insert
+//
+// Heap should allow objects of duplicate weights.
+func TestHeap_Insert_Duplicate(t *testing.T) {
+	h := NewMinHeap(heapComparator)
+
+	h.Insert(3)
+	h.Insert(3)
+
+	if h.Size != 2 {
+		t.Error("Could not insert objects with duplicate weights")
+	}
+}
+
 func TestHeap_Remove(t *testing.T) {
 	h := NewHeap(heapComparator, false, 2)
 
