@@ -27,12 +27,8 @@ func NewStringHasher() *StringHasher {
 		tableSize:  256,
 	}
 
-	hasher.tables = make([][]uint32, hasher.tableCount)
-	for t := range hasher.tables {
-		hasher.tables[t] = make([]uint32, hasher.tableSize)
-	}
+	hasher.GenerateTables()
 
-	hasher.makeTables()
 	return hasher
 }
 
@@ -51,8 +47,16 @@ func (h *StringHasher) Hash(x interface{}) uint32 {
 	}
 }
 
-// makeTables assigns to each table index a random uint32 value.
-func (h *StringHasher) makeTables() {
+// GenerateTables creates a set of tables for tabulation hashing.
+//
+// The values for each cell are random. Thus, this function is a way
+// to "change" the hash function without creating a new *StringHasher.
+func (h *StringHasher) GenerateTables() {
+	h.tables = make([][]uint32, h.tableCount)
+	for t := range h.tables {
+		h.tables[t] = make([]uint32, h.tableSize)
+	}
+
 	wg := &sync.WaitGroup{}
 	wg.Add(h.tableCount)
 
