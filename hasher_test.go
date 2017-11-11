@@ -1,11 +1,15 @@
-package dictionary
+package dictionary_test
 
-import "testing"
+import (
+	"testing"
+
+	"github.com/mlposey/dictionary"
+)
 
 // *StringHasher.Hash should create unique results for different permutations
 // of the same string.
 func TestStringHasher_Hash(t *testing.T) {
-	var hasher Hasher = NewStringHasher()
+	var hasher dictionary.Hasher = dictionary.NewStringHasher()
 
 	abc := hasher.Hash("abc")
 	bac := hasher.Hash("bac")
@@ -20,7 +24,7 @@ func TestStringHasher_Hash(t *testing.T) {
 }
 
 func TestStringHasher_Reseed(t *testing.T) {
-	var hasher Hasher = NewStringHasher()
+	var hasher dictionary.Hasher = dictionary.NewStringHasher()
 
-	hasher.(*StringHasher).Reseed()
+	hasher.(*dictionary.StringHasher).Reseed()
 }
