@@ -1,9 +1,10 @@
-package dictionary
+package dictionary_test
 
 import (
 	"math/rand"
 	"testing"
 
+	"github.com/mlposey/dictionary"
 	"github.com/satori/go.uuid"
 )
 
@@ -16,7 +17,7 @@ import (
 //
 // TODO: Write tests for int and Hashable types
 func TestDictionary_Insert_String(t *testing.T) {
-	dict := New(30)
+	dict := dictionary.New(30)
 	dict.Insert("bob", 3)
 	dict.Insert("bbo", 5)
 	dict.Insert("obb", 2)
@@ -29,7 +30,7 @@ func TestDictionary_Insert_String(t *testing.T) {
 //
 // Ensure that the proper Hasher is used when the key is of type int32.
 func TestDictionary_Insert_Int32(t *testing.T) {
-	dict := New()
+	dict := dictionary.New()
 	var key int32 = 3
 	dict.Insert(key, 2)
 	if dict.Get(key).(int) != 2 {
@@ -41,7 +42,7 @@ func TestDictionary_Insert_Int32(t *testing.T) {
 //
 // Ensure that inserting into a full dictionary triggers a resize.
 func TestDictionary_Insert_Full(t *testing.T) {
-	dict := New(2)
+	dict := dictionary.New(2)
 	dict.Insert("bob", 3)
 	dict.Insert("bbo", 5)
 	dict.Insert("obb", 2)
@@ -56,7 +57,7 @@ func TestDictionary_Insert_Full(t *testing.T) {
 // Ensure that string keys containing the same set of characters can be
 // retrieved as distinct objects.
 func TestDictionary_Get_Exists(t *testing.T) {
-	dict := New()
+	dict := dictionary.New()
 	dict.Insert("bob", 3)
 	dict.Insert("bbo", 5)
 	dict.Insert("obb", 2)
@@ -72,7 +73,7 @@ func TestDictionary_Get_Exists(t *testing.T) {
 //
 // Ensure that calling Get with a nonexistent key returns nil.
 func TestDictionary_Get_NoExists(t *testing.T) {
-	dict := New()
+	dict := dictionary.New()
 	dict.Insert("bob", 3)
 
 	if dict.Get("obb") != nil {
@@ -85,7 +86,7 @@ func TestDictionary_Get_NoExists(t *testing.T) {
 // Ensure that objects which exist can be removed and that the size is reduced
 // by 1 as a result.
 func TestDictionary_Remove_Exists(t *testing.T) {
-	dict := New()
+	dict := dictionary.New()
 	dict.Insert("bob", 5)
 
 	oldSize := dict.Size
@@ -99,7 +100,7 @@ func TestDictionary_Remove_Exists(t *testing.T) {
 //
 // Ensure that calling Remove with a nonexistent key returns an error.
 func TestDictionary_Remove_NoExists(t *testing.T) {
-	dict := New()
+	dict := dictionary.New()
 	dict.Insert("bob", 5)
 
 	if err := dict.Remove("obb"); err == nil {
@@ -108,7 +109,7 @@ func TestDictionary_Remove_NoExists(t *testing.T) {
 }
 
 func BenchmarkDictionary_Insert(b *testing.B) {
-	d := New(b.N)
+	d := dictionary.New(b.N)
 	for i := 0; i < b.N; i++ {
 		d.Insert(uuid.NewV4().String(), rand.Int())
 	}
@@ -123,7 +124,7 @@ func BenchmarkMap_Insert(b *testing.B) {
 
 func BenchmarkDictionary_Get(b *testing.B) {
 	var keys []string
-	d := New(b.N)
+	d := dictionary.New(b.N)
 	for i := 0; i < b.N; i++ {
 		d.Insert(uuid.NewV4().String(), rand.Int())
 	}
