@@ -1,12 +1,8 @@
-# golib
-A collection of data structures implemented in Go
+# dictionary
+A bucketized cuckoo table with 3-independent string hashing
 
-## What's Available
-The data structures available try to be as flexible as possible. Objects are added as interfaces, and you can define
-your own key comparison functions, which allows set-like behavior as well as implementations
-closer to associative arrays.
-
-* Dictionary - A variation of splash tables, which are bucketized cuckoo hash tables. Concurrency is still in the works,
-but optimizations such as tabulation hashing for strings make it a viable option.
-* Heap - A binary heap with default creational functions for min- and max-heaps
-* List - A standard doubly-linked list
+Wikipedia offers a [detailed look](https://en.wikipedia.org/wiki/Cuckoo_hashing) at the benefits of
+cuckoo hashing, but in short, this library offers three important things:
+* Constant-time retrieval
+* A [3-independent](https://en.wikipedia.org/wiki/Tabulation_hashing) set of hash functions for strings
+* A high load factor of 0.976, as per [the paper](http://ieeexplore.ieee.org/abstract/document/4221787/) by Kenneth Ross
