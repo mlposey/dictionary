@@ -6,10 +6,6 @@ import (
 	"errors"
 )
 
-// Each slot in a table holds a Bucket. Each Bucket can hold no more than
-// kBucketCapacity *Pairs.
-type Bucket []*Pair
-
 // Dictionary is a hash table for large volume data sets.
 //
 // It currently supports int, string, and Hashable key types. Types which
@@ -210,6 +206,10 @@ func (d *Dictionary) rehash() {
 	// Use the new hash function to determine key locations.
 	d.resize(d.tableSize)
 }
+
+// Bucket holds a collection of *Pairs for a Dictionary slot. Each Bucket can
+// hold no more than kBucketCapacity *Pairs.
+type Bucket []*Pair
 
 // Pair is an ordered pair of a key and an object identified by that key.
 type Pair struct {
