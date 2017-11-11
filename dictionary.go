@@ -44,8 +44,8 @@ const (
 	kBucketCapacity = 4
 )
 
-// NewDictionary creates an empty Dictionary with an optional table size.
-func NewDictionary(tableSize ...int) *Dictionary {
+// New creates an empty Dictionary with an optional table size.
+func New(tableSize ...int) *Dictionary {
 	// Acquire a capacity for the tables which is a power of two.
 	capacity := 8
 	if len(tableSize) != 0 {
