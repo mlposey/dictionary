@@ -1,3 +1,5 @@
+// Package dictionary provides an efficient hash table with mathematically
+// sound built-in hash functions.
 package dictionary
 
 import (
